@@ -5,14 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { ReactComponent as OpenEye } from '../widgets/icons/OpenEye.svg';
 import { ReactComponent as CloseEye } from '../widgets/icons/CloseEye.svg';
 
-// База всех скиллов для выпадающего списка
 const ALL_SKILLS = [
   'Adobe Photoshop', 'C#', 'C++', 'Figma', 'JavaScript', 'Python', 
   'Java', 'PostgreSQL', 'GitHub', 'Spring Boot', 'Spring Security', 
   'Kafka', 'Docker', 'Git', 'React', 'TypeScript', 'Node.js', 'Go', 'UI/UX'
 ];
 
-// ИКОНКИ
 const SearchIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A6A6A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8"></circle>
@@ -34,7 +32,6 @@ const SmallCrossIcon = () => (
   </svg>
 );
 
-// ТУМБЛЕР
 const Toggle = ({ isOn, handleToggle }) => (
   <div onClick={handleToggle} style={{
     width: '44px', height: '24px', background: isOn ? '#95E66B' : '#5C5C5C',
@@ -48,7 +45,6 @@ const Toggle = ({ isOn, handleToggle }) => (
   </div>
 );
 
-// СТИЛИ ТУЛТИПА
 const Tooltip = styled.div`
   position: absolute;
   ${props => props.$position === 'top' ? 'bottom: 100%;' : 'top: 100%;'}
@@ -59,6 +55,7 @@ const Tooltip = styled.div`
   white-space: nowrap; z-index: 100; opacity: 0; visibility: hidden;
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease; pointer-events: none;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+
   &::after {
     content: ''; position: absolute;
     ${props => props.$position === 'top' ? 'top: 100%;' : 'bottom: 100%;'}
@@ -72,10 +69,10 @@ const IconWrapper = styled.div`
   &:hover ${Tooltip} { opacity: 1; visibility: visible; transform: ${props => props.$position === 'top' ? 'translateY(-4px)' : 'translateY(4px)'}; }
 `;
 
-// ОСНОВНЫЕ СТИЛИ СТРАНИЦЫ
+// УБРАЛИ overflow-x: hidden ЗДЕСЬ
 const PageWrapper = styled.div`
   display: flex; gap: 100px; padding: 40px; color: white; justify-content: center;
-  font-family: 'Montserrat', sans-serif; overflow-x: hidden; width: 100%;
+  font-family: 'Montserrat', sans-serif; width: 100%;
 `;
 
 const LeftColumn = styled.div` display: flex; flex-direction: column; gap: 20px; width: 535px; `;
@@ -104,7 +101,6 @@ const StaticText = styled.div`
 `;
 const HideText = styled.span` font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 16px; letter-spacing: -0.03em; color: #959595; `;
 
-// СТИЛИ НАВЫКОВ 
 const SkillsHeader = styled.div` display: flex; align-items: center; justify-content: space-between; margin-top: 24px; margin-bottom: 16px; `;
 const SkillCard = styled.div`
   width: 100%; min-height: 80px; background: #282828; border: 1px solid #5C5C5C; border-radius: 8px;
@@ -119,7 +115,6 @@ const SkillTag = styled.div`
   ${props => props.$editable && `cursor: pointer; &:hover { background: #FF4D4D; }`}
 `;
 
-// ПРОЕКТЫ (Правая часть) 
 const ProjectsContainer = styled.div`
   width: 758px; height: 909px; background: #282828; border-radius: 20px;
   padding: 30px; display: flex; flex-direction: column; box-sizing: border-box;
@@ -141,16 +136,17 @@ const Button = styled.button`
   border: ${props => props.$primary ? 'none' : '1px solid #5C5C5C'};
 `;
 
-// РЕДАКТИРОВАНИЕ НАВЫКОВ 
 const EditSkillsContainer = styled.div` width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 24px; margin: 0 auto; `;
 const EditSkillsHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; `;
 const CloseBtn = styled.button` background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; &:hover { opacity: 0.7; }`;
+
 const DashedInputContainer = styled.div` position: relative; width: max-content; margin-top: 8px; `;
 const DashedInput = styled.div`
   display: flex; align-items: center; gap: 8px; padding: 6px 16px; border: 1px dashed #5C5C5C; border-radius: 20px;
   cursor: text; color: #A6A6A6; font-size: 12px;
   input { background: transparent; border: none; color: white; outline: none; font-family: 'Montserrat', sans-serif; font-size: 12px; width: 120px; }
 `;
+
 const DropdownMenu = styled.div`
   position: absolute; top: 100%; left: 0; margin-top: 8px; background: #5C5C5C; border-radius: 8px;
   padding: 8px 0; width: 200px; max-height: 200px; overflow-y: auto; z-index: 100;
@@ -169,7 +165,6 @@ const ConfirmButton = styled.button`
 export const ProfilePage = () => {
   const navigate = useNavigate();
 
-  // Состояния контактов
   const [emailVisible, setEmailVisible] = useState(true);
   const [tgVisible, setTgVisible] = useState(true);
   const [email, setEmail] = useState('coolbusinessman86@mail.ru');
@@ -178,7 +173,6 @@ export const ProfilePage = () => {
   const [draftEmail, setDraftEmail] = useState('');
   const [draftTelegram, setDraftTelegram] = useState('');
 
-  // Состояния навыков
   const [skills, setSkills] = useState({ high: [], medium: [], basic: ['Java', 'PostgreSQL', 'GitHub', 'Spring Boot', 'Spring Security', 'Kafka', 'Docker', 'Figma', 'Git'] });
   const [isEditingSkills, setIsEditingSkills] = useState(false);
   const [draftSkills, setDraftSkills] = useState({ high: [], medium: [], basic: [] });
@@ -187,12 +181,10 @@ export const ProfilePage = () => {
 
   const hasSkillChanges = JSON.stringify(skills) !== JSON.stringify(draftSkills);
 
-  // Обработчики контактов
   const handleEditContact = () => { setDraftEmail(email); setDraftTelegram(telegram); setIsEditingContact(true); };
   const handleCancelContact = () => { setIsEditingContact(false); };
   const handleSaveContact = () => { setEmail(draftEmail); setTelegram(draftTelegram); setIsEditingContact(false); };
 
-  // Обработчики навыков
   const openSkillsEdit = () => { setDraftSkills(JSON.parse(JSON.stringify(skills))); setIsEditingSkills(true); };
   const closeSkillsEdit = () => { setIsEditingSkills(false); setActiveSearchLevel(null); setSearchQuery(''); };
   const saveSkills = () => { if (hasSkillChanges) { setSkills(draftSkills); closeSkillsEdit(); } };
@@ -202,7 +194,6 @@ export const ProfilePage = () => {
 
   const getFilteredSkills = (level) => ALL_SKILLS.filter(s => !draftSkills[level].includes(s) && s.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Рендер редактирования навыков
   if (isEditingSkills) {
     return (
       <PageWrapper style={{ flexDirection: 'column', alignItems: 'center' }}>
@@ -241,7 +232,6 @@ export const ProfilePage = () => {
     );
   }
 
-  // Основной рендер профиля
   return (
     <PageWrapper>
       <LeftColumn>
