@@ -21,10 +21,9 @@ const HeaderContainer = styled.header`
   color: #FFFFFF;
 `;
 
-// Контейнер, имитирующий экран Фигмы (1440px), чтобы абсолютные координаты работали идеально
 const HeaderInner = styled.div`
   width: 100%;
-  max-width: 1440px;
+  max-width: 90%;
   height: 100%;
   position: relative;
 `;
