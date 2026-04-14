@@ -3,8 +3,9 @@ import { BaseLayout } from '../layouts/BaseLayout';
 import { WelcomePage } from '../../pages/WelcomePage';
 import { AutorisationPage } from '../../pages/AutorisationPage';
 import { VerificationPage } from '../../pages/VerificationPage';
-import { ProfilePage } from '../../pages/ProfilePage'; // Импорт
+import { ProfilePage } from '../../pages/ProfilePage';
 import { NotFoundPage } from '../../pages/NotFoundPage';
+import { UsersPage } from '../../pages/UsersPage'; // <-- ИМПОРТИРУЕМ
 
 const router = createBrowserRouter([
   {
@@ -14,7 +15,8 @@ const router = createBrowserRouter([
       { path: "/", element: <WelcomePage /> },
       { path: "/auth", element: <AutorisationPage /> },
       { path: "/verify", element: <VerificationPage /> },
-      { path: "/profile", element: <ProfilePage /> }, // Новый путь
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "/users", element: <UsersPage /> }, // <-- ДОБАВЛЯЕМ ПУТЬ
       { path: "/404", element: <NotFoundPage /> },
     ],
   },

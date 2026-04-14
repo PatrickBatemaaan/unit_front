@@ -5,7 +5,7 @@ import { Card } from '../shared/ui/Card';
 import { ReactComponent as ArrowLeft } from '../widgets/icons/arrow-left.svg';
 import { ReactComponent as TgBotArrow } from '../widgets/icons/TgBotArrow.svg';
 
-const API_URL = 'http://unit_projects_backend:5000'; // <--- ПОРТ БЭКЕНДА
+const API_URL = 'http://localhost:5000'; // <--- ПОРТ БЭКЕНДА
 
 const LABEL_COLOR = '#A6A6A6';
 const ACTIVE_COLOR = '#95E66B';

@@ -64,7 +64,7 @@ export const Header = () => {
         {!isAuthPage && (
           <Nav>
             <NavItem onClick={() => navigate('/profile')}>Профиль</NavItem>
-            <NavItem onClick={() => navigate('/404')}>Участники</NavItem>
+            <NavItem onClick={() => navigate('/users')}>Участники</NavItem>
             <NavItem onClick={() => navigate('/404')}>Проекты</NavItem>
           </Nav>
         )}

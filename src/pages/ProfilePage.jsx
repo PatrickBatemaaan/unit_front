@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
 import { ReactComponent as OpenEye } from '../widgets/icons/OpenEye.svg';
 import { ReactComponent as CloseEye } from '../widgets/icons/CloseEye.svg';
+import { ReactComponent as InfoIcon } from '../widgets/icons/Info.svg';
 
-const API_URL = 'http://localhost:5000'; // <--- ПОРТ БЭКЕНДА
+const API_URL = 'http://localhost:5000'; 
 
 const ALL_SKILLS = [
   'Adobe Photoshop', 'C#', 'C++', 'Figma', 'JavaScript', 'Python', 
@@ -33,8 +34,9 @@ const ActionText = styled.span` font-family: 'Montserrat', sans-serif; font-weig
 const ContactRow = styled.div` display: flex; align-items: center; justify-content: space-between; width: 100%; height: 32px; `;
 const ContactInfoWrapper = styled.div` display: flex; align-items: center; gap: 12px; `;
 const LabelWrapper = styled.div` display: flex; align-items: center; gap: 8px; width: 110px; color: #A6A6A6; font-size: 16px; svg { width: 20px; height: 20px; flex-shrink: 0; } `;
-const EditableInput = styled.input` width: 280px; height: 28px; background: transparent; border: none; border-bottom: 1px solid #5C5C5C; color: #FFFFFF; font-family: 'Montserrat', sans-serif; font-size: 16px; padding: 0 0 2px 0; outline: none; box-sizing: border-box; transition: border-bottom-color 0.2s; &:focus { border-bottom-color: #95E66B; } `;
-const StaticText = styled.div` width: 280px; height: 28px; font-size: 16px; display: flex; align-items: flex-end; padding: 0 0 2px 0; border-bottom: 1px solid transparent; box-sizing: border-box; `;
+
+const EditableInput = styled.input` width: 280px; height: 28px; background: transparent; border: none; border-bottom: 1px solid #5C5C5C; color: #FFFFFF; font-family: 'Montserrat', sans-serif; font-size: 16px; padding: 0 0 2px 0; outline: none; box-sizing: border-box; transition: border-bottom-color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; &:focus { border-bottom-color: #95E66B; } `;
+const StaticText = styled.div` width: 280px; height: 28px; font-size: 16px; display: flex; align-items: flex-end; padding: 0 0 2px 0; border-bottom: 1px solid transparent; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 26px; `;
 const HideText = styled.span` font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 16px; letter-spacing: -0.03em; color: #959595; `;
 
 const SkillsHeader = styled.div` display: flex; align-items: flex-end; justify-content: space-between; margin-top: 60px; margin-bottom: 16.5px; `;
@@ -44,15 +46,72 @@ const EmptySkillText = styled.span` font-family: 'Montserrat', sans-serif; font-
 const TagsContainer = styled.div` display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; `;
 const SkillTag = styled.div` background: #5C5C5C; color: #E3E3E3; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 6px; ${props => props.$editable && `cursor: pointer;`} `;
 
+// === ПРОЕКТЫ ===
 const ProjectsContainer = styled.div` width: 758px; height: 909px; background: #282828; border-radius: 20px; padding: 30px; display: flex; flex-direction: column; box-sizing: border-box; `;
 const ScrollWrapper = styled.div` flex: 1; width: 710px; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; padding-right: 16px; margin-bottom: 24px; &::-webkit-scrollbar { width: 14px; } &::-webkit-scrollbar-thumb { background: #5C5C5C; border-radius: 8px; border: 4px solid #282828; } `;
 const ProjectsGrid = styled.div` width: 678px; display: grid; grid-template-columns: 329px 329px; gap: 31px 20px; box-sizing: border-box; `;
-const ProjectCard = styled.div` width: 329px; height: 153px; border: 1px solid #5C5C5C; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; `;
+const ProjectCard = styled.div` 
+  width: 329px; height: 153px; border: 1px solid #5C5C5C; border-radius: 8px; 
+  position: relative; box-sizing: border-box; background: transparent;
+`;
+
+// === НОВЫЕ СТИЛИ ТИПОГРАФИКИ КАРТОЧКИ ПРОЕКТА ИЗ ФИГМЫ ===
+const ProjectTitle = styled.h4`
+  position: absolute; top: 18px; left: 16px; margin: 0;
+  width: 236px; height: 32px; /* Фиксированный размер */
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600; /* SemiBold */
+  font-size: 26px; /* Размер из скрина */
+  line-height: 100%;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+`;
+
+const ProjectStatus = styled.span`
+  position: absolute; top: 49px; left: 16px; margin: 0;
+  height: 20px; /* Фиксированная высота */
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 14px; /* Оптимально для высоты 20px */
+  line-height: 20px;
+  color: ${props => props.$color}; 
+`;
+
+const ProjectInfoIcon = styled.div`
+  position: absolute; top: 16px; right: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  &:hover { opacity: 0.8; }
+`;
+
+const ProjectDesc = styled.p`
+  position: absolute; top: 77px; left: 16px; margin: 0;
+  width: 297px; height: 40px; /* Жесткий размер под 2 строки */
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px; /* Требование из ТЗ */
+  line-height: 20px; /* 20 * 2 = 40px высоты */
+  color: #FFFFFF; /* Белый цвет из ТЗ */
+  overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+`;
+
+const ProjectRole = styled.div`
+  position: absolute; bottom: 13px; left: 16px; margin: 0;
+  width: 236px; height: 20px; /* Фиксированный размер */
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 16px; /* Требование из ТЗ */
+  line-height: 20px;
+  color: #FFFFFF;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  span { color: #A4A4A4; }
+`;
+
 const ProjectButton = styled.button` width: 329px; height: 48px; border-radius: 8px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; background: ${props => props.$primary ? '#95E66B' : 'transparent'}; color: ${props => props.$primary ? '#000' : '#fff'}; border: ${props => props.$primary ? 'none' : '1px solid #5C5C5C'}; `;
 
+// === МОДАЛКА НАВЫКОВ ===
 const EditSkillsModal = styled.div` width: 886px; min-height: 530px; height: auto; background: #282828; border: 1px solid #5C5C5C; border-radius: 20px; margin-top: 211px; padding: 47px 0 40px 0; display: flex; flex-direction: column; position: relative; box-sizing: border-box; `;
 const EditSkillsTitle = styled.h1` margin: 0 0 24px 65px; font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 600; color: #FFFFFF; line-height: 100%; `;
-const EditSkillCard = styled.div` width: 788px; min-height: 86px; height: auto; margin-left: 50px; margin-bottom: 8px; background: #282828; border: 1px solid #5C5C5C; border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; `;
+const EditSkillCard = styled.div` width: 788px; min-height: 86px; height: auto; margin-left: 50px; margin-bottom: 8px; background: #282828; border: 1px solid #5C5C5C; border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; transition: height 0.2s ease; `;
 const ConfirmButton = styled.button` width: 329px; height: 48px; border-radius: 8px; font-family: 'Montserrat'; font-weight: 500; font-size: 24px; cursor: pointer; margin: 18px auto 0 auto; background: ${props => props.$active ? '#95E66B' : 'transparent'}; color: ${props => props.$active ? '#151515' : '#929292'}; border: 1px solid ${props => props.$active ? '#95E66B' : '#5C5C5C'}; transition: 0.3s; `;
 const DashedInputContainer = styled.div` position: relative; width: max-content; margin-top: 4px; `;
 const DashedInput = styled.div` display: flex; align-items: center; gap: 8px; padding: 4px 16px; border: 1px dashed #5C5C5C; border-radius: 20px; cursor: text; width: fit-content; input { background: transparent; border: none; color: white; outline: none; font-size: 12px; width: 100px; font-family: 'Montserrat'; } `;
@@ -63,7 +122,7 @@ export const ProfilePage = () => {
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState({ name: 'Имя', surname: 'Фамилия', filialName: 'Филиал', email: '', telegramUsername: '' });
+  const [userData, setUserData] = useState({ name: '', surname: '', filialName: '', email: '', telegramUsername: '' });
 
   const [emailVisible, setEmailVisible] = useState(true);
   const [tgVisible, setTgVisible] = useState(true);
@@ -76,22 +135,33 @@ export const ProfilePage = () => {
   const [draftSkills, setDraftSkills] = useState({ high: [], medium: [], basic: [] });
   const [activeSearchLevel, setActiveSearchLevel] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [availableSkillsFromApi, setAvailableSkillsFromApi] = useState([]);
 
   const hasSkillChanges = JSON.stringify(skills) !== JSON.stringify(draftSkills);
 
-  // ПОЛУЧАЕМ ДАННЫЕ ПРОФИЛЯ ПРИ ЗАГРУЗКЕ
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await fetch(`${API_URL}/api/account/me`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
+          method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' }
         });
         if (response.ok) {
           const data = await response.json();
           setUserData(data);
-          if (data.userSkills) setSkills({ high: [], medium: [], basic: data.userSkills });
+          
+          if (data.skills && Array.isArray(data.skills)) {
+            const parsedSkills = { high: [], medium: [], basic: [] };
+            data.skills.forEach(skillObj => {
+              const skillId = skillObj.id || skillObj.skillId;
+              const skillName = skillObj.name || skillObj.skillName || skillObj.title;
+              const skillLevel = skillObj.level?.toLowerCase() || 'basic'; 
+              const item = { id: skillId, name: skillName };
+              if (skillLevel === 'high' || skillLevel === 2 || skillLevel === '2') parsedSkills.high.push(item);
+              else if (skillLevel === 'medium' || skillLevel === 1 || skillLevel === '1') parsedSkills.medium.push(item);
+              else parsedSkills.basic.push(item); 
+            });
+            setSkills(parsedSkills);
+          }
         } else {
           navigate('/auth');
         }
@@ -104,17 +174,69 @@ export const ProfilePage = () => {
     fetchProfile();
   }, [navigate]);
 
+  useEffect(() => {
+    if (!activeSearchLevel) return;
+    const fetchSkillsList = async () => {
+      try {
+        const url = new URL(`${API_URL}/api/skills`);
+        if (searchQuery) url.searchParams.append('Search', searchQuery);
+        url.searchParams.append('PageSize', '20');
+        url.searchParams.append('Page', '1');
+        const response = await fetch(url, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } });
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableSkillsFromApi(data); 
+        }
+      } catch (error) { console.error(error); }
+    };
+    const timeoutId = setTimeout(() => fetchSkillsList(), 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, activeSearchLevel]);
+
   const handleEditContact = () => { setDraftEmail(userData.email); setDraftTelegram(userData.telegramUsername); setIsEditingContact(true); };
   const handleCancelContact = () => setIsEditingContact(false);
   const handleSaveContact = () => { setUserData(prev => ({...prev, email: draftEmail, telegramUsername: draftTelegram})); setIsEditingContact(false); };
 
   const openSkillsEdit = () => { setDraftSkills(JSON.parse(JSON.stringify(skills))); setIsEditingSkills(true); };
   const closeSkillsEdit = () => { setIsEditingSkills(false); setActiveSearchLevel(null); setSearchQuery(''); };
-  const saveSkills = () => { if (hasSkillChanges) { setSkills(draftSkills); closeSkillsEdit(); } };
-  const removeSkill = (level, skillToRemove) => { setDraftSkills(prev => ({ ...prev, [level]: prev[level].filter(s => s !== skillToRemove) })); };
-  const addSkill = (level, newSkill) => { setDraftSkills(prev => ({ ...prev, [level]: [...prev[level], newSkill] })); setActiveSearchLevel(null); setSearchQuery(''); };
 
-  const getFilteredSkills = (level) => ALL_SKILLS.filter(s => !draftSkills[level].includes(s) && s.toLowerCase().includes(searchQuery.toLowerCase()));
+  const removeSkill = (level, skillId) => { setDraftSkills(prev => ({ ...prev, [level]: prev[level].filter(s => s.id !== skillId) })); };
+  const addSkill = (level, skillObj) => { setDraftSkills(prev => ({ ...prev, [level]: [...prev[level], skillObj] })); setActiveSearchLevel(null); setSearchQuery(''); };
+
+  const saveSkills = async () => { 
+    if (!hasSkillChanges) return;
+    const levelMap = { 'basic': 0, 'medium': 1, 'high': 2 };
+    const payload = [];
+    ['high', 'medium', 'basic'].forEach(level => { draftSkills[level].forEach(skill => { payload.push({ id: skill.id, level: levelMap[level] }); }); });
+    try {
+      const response = await fetch(`${API_URL}/api/account/skills`, {
+        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (response.ok) { setSkills(draftSkills); closeSkillsEdit(); } 
+      else { console.error("Ошибка сохранения", await response.text()); }
+    } catch (error) { console.error(error); }
+  };
+
+  const getFilteredSkills = () => {
+    const allAddedIds = [...draftSkills.high.map(s => s.id), ...draftSkills.medium.map(s => s.id), ...draftSkills.basic.map(s => s.id)];
+    return availableSkillsFromApi.filter(s => !allAddedIds.includes(s.id) && (s.name || s.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
+  };
+
+  const mockProjects = Array(10).fill(0).map((_, i) => {
+    const statuses = [
+      { text: 'в разработке', color: '#629D44' },
+      { text: 'завершен', color: '#FB5656' },
+      { text: 'заморожен', color: '#55A7EA' }
+    ];
+    return {
+      id: i,
+      title: 'Лютое название',
+      desc: 'Мега-проект с чем-то там про что-то там',
+      role: 'программист',
+      status: statuses[i % 3] 
+    };
+  });
 
   if (isLoading) return <PageWrapper><h2>Загрузка профиля...</h2></PageWrapper>;
 
@@ -131,7 +253,7 @@ export const ProfilePage = () => {
               <EditSkillCard key={level}>
                 <SkillLevel>{names[level]}</SkillLevel>
                 {draftSkills[level].length > 0 && (
-                  <TagsContainer>{draftSkills[level].map(skill => <SkillTag key={skill} $editable onClick={() => removeSkill(level, skill)}>{skill} <SmallCrossIcon /></SkillTag>)}</TagsContainer>
+                  <TagsContainer>{draftSkills[level].map(skill => <SkillTag key={skill.id} $editable onClick={() => removeSkill(level, skill.id)}>{skill.name || skill.title} <SmallCrossIcon /></SkillTag>)}</TagsContainer>
                 )}
                 <DashedInputContainer>
                   <DashedInput onClick={() => setActiveSearchLevel(level)}>
@@ -139,7 +261,7 @@ export const ProfilePage = () => {
                   </DashedInput>
                   {isActive && (
                     <DropdownMenu>
-                      {getFilteredSkills(level).length > 0 ? getFilteredSkills(level).map(s => <DropdownItem key={s} onMouseDown={() => addSkill(level, s)}>{s}</DropdownItem>) : <div style={{ padding: '8px 16px', fontSize: '12px', color: '#A6A6A6' }}>Ничего не найдено</div>}
+                      {getFilteredSkills().length > 0 ? getFilteredSkills().map(s => <DropdownItem key={s.id} onMouseDown={() => addSkill(level, s)}>{s.name || s.title}</DropdownItem>) : <div style={{ padding: '8px 16px', fontSize: '12px', color: '#A6A6A6' }}>Ничего не найдено</div>}
                     </DropdownMenu>
                   )}
                 </DashedInputContainer>
@@ -171,7 +293,7 @@ export const ProfilePage = () => {
 
         <ContactRow>
           <ContactInfoWrapper>
-            <LabelWrapper><IconWrapper $position="top">{emailVisible ? <OpenEye /> : <CloseEye />}<Tooltip $position="top">{emailVisible ? 'Ваша почта видна всем пользователям' : 'Ваша почта скрыта от посторонних глаз'}</Tooltip></IconWrapper><span>Эл. почта:</span></LabelWrapper>
+            <LabelWrapper><IconWrapper $position="top">{emailVisible ? <OpenEye /> : <CloseEye />}<Tooltip $position="top">{emailVisible ? 'Ваша почта видна всем' : 'Почта скрыта'}</Tooltip></IconWrapper><span>Эл. почта:</span></LabelWrapper>
             {isEditingContact ? <EditableInput value={draftEmail} onChange={(e) => setDraftEmail(e.target.value)} /> : <StaticText>{userData.email}</StaticText>}
           </ContactInfoWrapper>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><HideText>Скрыть</HideText><Toggle isOn={!emailVisible} handleToggle={() => setEmailVisible(!emailVisible)} /></div>
@@ -179,7 +301,7 @@ export const ProfilePage = () => {
 
         <ContactRow style={{ marginTop: '9px' }}>
           <ContactInfoWrapper>
-            <LabelWrapper><IconWrapper $position="bottom">{tgVisible ? <OpenEye /> : <CloseEye />}<Tooltip $position="bottom">{tgVisible ? 'Ваш телеграм видят все пользователи' : 'Ваш телеграм скрыт от посторонних глаз'}</Tooltip></IconWrapper><span>Telegram:</span></LabelWrapper>
+            <LabelWrapper><IconWrapper $position="bottom">{tgVisible ? <OpenEye /> : <CloseEye />}<Tooltip $position="bottom">{tgVisible ? 'Ваш Telegram виден всем' : 'Telegram скрыт'}</Tooltip></IconWrapper><span>Telegram:</span></LabelWrapper>
             {isEditingContact ? <EditableInput value={draftTelegram} onChange={(e) => setDraftTelegram(e.target.value)} /> : <StaticText>{userData.telegramUsername}</StaticText>}
           </ContactInfoWrapper>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><HideText>Скрыть</HideText><Toggle isOn={!tgVisible} handleToggle={() => setTgVisible(!tgVisible)} /></div>
@@ -195,7 +317,7 @@ export const ProfilePage = () => {
           return (
             <SkillCard key={level}>
               <SkillLevel>{names[level]}</SkillLevel>
-              {skills[level].length > 0 ? <TagsContainer>{skills[level].map(skill => <SkillTag key={skill}>{skill}</SkillTag>)}</TagsContainer> : <EmptySkillText>Вы не указали свои навыки</EmptySkillText>}
+              {skills[level].length > 0 ? <TagsContainer>{skills[level].map(skill => <SkillTag key={skill.id}>{skill.name || skill.title}</SkillTag>)}</TagsContainer> : <EmptySkillText>Вы не указали свои навыки</EmptySkillText>}
             </SkillCard>
           );
         })}
@@ -205,8 +327,14 @@ export const ProfilePage = () => {
         <h2 style={{ fontSize: '32px', margin: '0 0 24px 0' }}>Проекты</h2>
         <ScrollWrapper>
           <ProjectsGrid>
-            {Array(10).fill(0).map((_, i) => (
-              <ProjectCard key={i}><h4 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>Лютое название</h4><p style={{ margin: 0, fontSize: '12px', color: '#A6A6A6' }}>Мега-проект с чем-то там</p><p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#95E66B' }}>в разработке</p></ProjectCard>
+            {mockProjects.map((project) => (
+              <ProjectCard key={project.id}>
+                <ProjectTitle>{project.title}</ProjectTitle>
+                <ProjectInfoIcon onClick={() => navigate('/404')}><InfoIcon /></ProjectInfoIcon>
+                <ProjectStatus $color={project.status.color}>{project.status.text}</ProjectStatus>
+                <ProjectDesc>{project.desc}</ProjectDesc>
+                <ProjectRole><span>Роль: </span>{project.role}</ProjectRole>
+              </ProjectCard>
             ))}
           </ProjectsGrid>
         </ScrollWrapper>
