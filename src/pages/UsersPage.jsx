@@ -237,12 +237,7 @@ export const UsersPage = () => {
         
         const response = await fetch(url, {
           method: 'GET',
-          credentials: 'include',
-          // Если снова вернется 415, закомментируй эти заголовки:
-          headers: { 
-            'Accept': 'application/json',
-            'Content-Type': 'application/json' 
-          }
+          credentials: 'include'
         });
 
         if (response.ok) {
